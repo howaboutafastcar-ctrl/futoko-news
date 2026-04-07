@@ -32,7 +32,6 @@ jobs:
           CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python fetch_news.py
-        working-directory: futoko-news
 
       - name: 投稿済み記事リストをコミット
         run: |
