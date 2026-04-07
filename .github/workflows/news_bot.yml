@@ -26,7 +26,6 @@ jobs:
 
       - name: 依存パッケージをインストール
         run: pip install -r requirements.txt
-        working-directory: futoko-news
 
       - name: ニュースを収集してDiscordに投稿
         env:
