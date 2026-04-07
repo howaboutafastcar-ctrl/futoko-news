@@ -1,0 +1,45 @@
+name: 不登校ニュース自動投稿
+
+on:
+  schedule:
+    # 毎朝7時（JST）= UTC 22:00（前日）
+    - cron: "0 22 * * *"
+  workflow_dispatch: # 手動実行も可能にする
+
+jobs:
+  post-news:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # posted_articles.json をコミットするために必要
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Python をセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: 依存パッケージをインストール
+        run: pip install -r requirements.txt
+        working-directory: futoko-news
+
+      - name: ニュースを収集してDiscordに投稿
+        env:
+          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python fetch_news.py
+        working-directory: futoko-news
+
+      - name: 投稿済み記事リストをコミット
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add futoko-news/posted_articles.json
+          # 変更がある場合のみコミット
+          git diff --staged --quiet || git commit -m "chore: 投稿済み記事リストを更新 [skip ci]"
+          git push
